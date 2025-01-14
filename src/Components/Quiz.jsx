@@ -51,47 +51,43 @@ export const Quiz = () => {
 */
 }
 
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import { useState } from "react";
 import Questions from "../questions.js";
-import quizCompletedImage from "../assets/quiz-complete.png";
+import { Summary } from "./Summary.jsx";
+
+import { Question } from "./Question.jsx";
 
 export default function Quiz() {
   const [userAnswers, setUserAnswers] = useState([]);
+
   const activeQuestionIndex = userAnswers.length;
   const quizCompleted = activeQuestionIndex === Questions.length;
 
-  const handleSelectAnswer = (selectedAnswer) => {
-    setUserAnswers((prevAns) => {
-      return [...prevAns, selectedAnswer];
-    });
-  };
+  const handleSelectAnswer = useCallback(function handleSelectAnswer(
+    selectedAnswer
+  ) {
+    setUserAnswers((prevAns) => [...prevAns, selectedAnswer]);
+  },
+  []);
+
+  const handleSkipAnswer = useCallback(
+    () => handleSelectAnswer(null),
+    [handleSelectAnswer]
+  );
 
   if (quizCompleted) {
-    return (
-      <div id="summary">
-        <h2>Quiz Completed!</h2>
-        <img src={quizCompletedImage} alt="Trophy" />
-      </div>
-    );
+    return <Summary ans={userAnswers} />;
   }
 
-  const shuffledAnswers = [...Questions[activeQuestionIndex].answers];
-  shuffledAnswers.sort(() => Math.random() - 0.5);
   return (
     <div id="quiz">
-      <div id="question">
-        <h2>{Questions[activeQuestionIndex].text}</h2>
-        <ul id="answers">
-          {shuffledAnswers.map((answer) => (
-            <li key={answer} className="answer">
-              <button onClick={() => handleSelectAnswer(answer)}>
-                {answer}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Question
+        key={activeQuestionIndex}
+        index={activeQuestionIndex}
+        onSelectAnswer={handleSelectAnswer}
+        onSkipAnswer={handleSkipAnswer}
+      />
     </div>
   );
 }
